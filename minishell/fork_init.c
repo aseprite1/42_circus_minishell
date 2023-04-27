@@ -6,7 +6,7 @@
 /*   By: geonlee <geonlee@student.42seoul.kr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 09:03:14 by geonlee           #+#    #+#             */
-/*   Updated: 2023/04/27 18:58:43 by geonlee          ###   ########.fr       */
+/*   Updated: 2023/04/27 20:07:52 by geonlee          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,8 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <readline/readline.h>
+#include <readline/history.h>
 
 typedef struct s_redir
 {
@@ -45,8 +46,12 @@ int pipe_cnt(t_command *command)
     i = 0;
     if (!command)
         return (-1);
-    while (command[i].is_end != 1)
+    while (1)
+    {
+        if (command[i].is_end == 1)
+            break;
         i++;
+    }
     return (i);
 }
 
@@ -82,22 +87,20 @@ void exec_in_heredoc(t_command command, int i)
 		if (str == NULL)
 		{
 			if (close(fd) == -1)
-				return (1);
-           return 1;
+				return ;
+           return ;
 		}
-		if (!strcmp(str, command.out[i].arg))
+		if (!strcmp(str, command.in[i].arg))
 		{
 			free(str);
-			if (close(fd) == -1)
-				return (1);
+            close(fd);
 			fd = open("heredoc", O_RDONLY , 0644);
 			dup2(fd, STDIN_FILENO);
-			if (close(fd) == -1)
-				return (1);
+			close(fd);
 			//  execve(command.cmd[0], command.cmd, command.env);;
-			return 0;
+			return ;
 		}
-        write(fd, str, ft_strlen(str));
+        write(fd, str, strlen(str));
 		write(fd, "\n", 1);
         free(str);
     }
@@ -110,6 +113,7 @@ void    exec_in_rdr(t_command command, int i)
     fd = open(command.in[i].arg, O_RDONLY, 0644);
     dup2(fd, STDIN_FILENO);
     close(fd);
+    // printf("ASDADSADA");
     // execve(command.cmd[0], command.cmd, command.env);
 }
 
@@ -145,10 +149,13 @@ void exec_redir(t_command command)
         while (1)
         {
             if (command.in[i].dir == 1)
+            {
+                printf("alive here");
                 exec_in_rdr(command, i);
+            }
             else
                 exec_in_heredoc(command, i);
-            if (command.out[i].is_end == 1)
+            if (command.in[i].is_end == 1)
                 break;
             i++;
         }
@@ -158,9 +165,9 @@ void exec_redir(t_command command)
         while (1)
         {
             if (command.out[i].dir == 1)
-                 exec_out_rdr_replace(command, i);
+                exec_out_rdr_replace(command, i);
             else
-                 exec_out_rdr_append(command, i);
+                exec_out_rdr_append(command, i);
             if (command.out[i].is_end == 1)
                 break;
             i++;
@@ -179,7 +186,7 @@ void exec_cmd(t_command command)
         else
             builtin_exec(command);
     }
-}s
+}
 
 void pipe_child_process(t_command *command, int *pipes, int in_tmp, int i)
 {
@@ -262,13 +269,20 @@ void test_init(t_command *command, char **ag)
     command[0].is_redir = 1;
     command[0].is_builtin = 0;
     command[0].idx = 0;
-    command[0].is_end = 0;
-    command[0].in = NULL;
-    command[0].out = NULL;
+    command[0].is_end = 1;
+    t_redir *in_tmp = (t_redir *)malloc(sizeof(t_redir) * 1);
+    in_tmp[0].dir=2;
+    in_tmp[0].is_end=1;
+    in_tmp[0].arg=strdup(ag[3]);
+    t_redir *out_tmp = (t_redir *)malloc(sizeof(t_redir) * 1);
+    out_tmp[0].dir=1;
+    out_tmp[0].is_end=1;
+    out_tmp[0].arg=strdup(ag[4]);
     command[0].env = NULL;
-
-
-
+    command[0].in = in_tmp;
+    command[0].out = out_tmp;
+    // command[0].in = NULL;
+    // command[0].out = NULL;
     // cmd_grep = (char **)malloc(sizeof(char *) * 3);
     // cmd_grep[0] = strdup(ag[3]);
     // cmd_grep[1] = strdup(ag[4]);
@@ -290,9 +304,9 @@ int main(int ac, char **ag)
     printf("%d \n",ac);
     command = (t_command *)malloc(sizeof(t_command) * 4);
     test_init(command, ag);
-    printf("1[0] : %s\n",(command[0].cmd)[0]);
-    printf("1[1] : %s\n",(command[0].cmd)[1]);
-    printf("wut : %d\n",(command[0].idx));
+    // printf("1[0] : %s\n",(command[0].cmd)[0]);
+    // printf("1[1] : %s\n",(command[0].cmd)[1]);
+    // printf("wut : %d\n",(command[0].idx));
     // printf("wut : %d\n",(command[1].idx));
     // printf("2[0] : %s\n",(command[1].cmd)[0]);
     // printf("2[1] : %s\n",(command[1].cmd)[1]);
