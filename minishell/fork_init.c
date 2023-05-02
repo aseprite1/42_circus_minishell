@@ -6,7 +6,7 @@
 /*   By: geonlee <geonlee@student.42seoul.kr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 09:03:14 by geonlee           #+#    #+#             */
-/*   Updated: 2023/05/02 19:09:04 by geonlee          ###   ########.fr       */
+/*   Updated: 2023/05/02 19:48:17 by geonlee          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ typedef struct s_command
 	char **cmd; // ex) { {/"bin/ls/"}, {"-la"}}
 	char **env; //요기요 
 	int is_redir; // 리다이렉션 여부
-	int is_builtin; // 빌트인 여여부
+	int builtin_num; // 빌트인 여여부
 	int command_len;
 	int idx; // 파이프 기준으로 나눴을때 몇번째 커멘드인지
 	t_redir *redir;
@@ -277,7 +277,15 @@ void exec_cmd(t_command command)
 {
 	if (command.is_redir == 1)
 		exec_rdr(command.redir);
-	if (command.is_builtin == 0)
+	if (command.command_len == 1 && command.builtin_num != 0)
+	{
+		if (command.builtin_num == 1)
+		{
+			builtin_exec(command);
+		}
+		builtin_exec_nofork(command);
+	}
+	else if (command.builtin_num == 0)
 		execve((command.cmd)[0], command.cmd, command.env);
 	else
 		builtin_exec(command);
@@ -329,15 +337,25 @@ pid_t *fork_process(t_command *command)
 	return (pid);
 }
 
+// void builtin_exec(t_command command)
+// {
+// 	char **ag;
+
+// 	ag = command.cmd;
+// 	if (!(str_cmp(ag[0], "echo")))
+// 		ft_echo(ag);
+// 	else if(!(str))
+// }
+
 void exec_init(t_command *command)
 {
 	pid_t   *pid_lst;
 
 	exec_rdr_list(command);
-	if (command[0].command_len == 1 && (command[0].is_builtin == 1) \
-		(ft_is_relatve_env(command[0].cmd || ft_isexit(command[0].cmd))))
-	if (/*커맨드 개수 1개 && builtin && (built in 이 환경변수 바꿔주는 명령어일때 || exit))*/0)
+	/*커맨드 개수 1개 && builtin && (built in 이 환경변수 바꿔주는 명령어일때 || exit))*/
+	if (command[0].command_len == 1 && (command[0].builtin_num > 1  && command[0].builtin_num < 8))
 	{
+		exec_cmd(command[0]);
 		//fork 안하고 처리. exec함수 아예 빠져나가서 새로운 프롬프트 띄우거나 exit이면 모두 free하고 종료되도록
 	}
 	else if (command[0].command_len == 1)
@@ -364,7 +382,7 @@ void test_init(t_command *command, char **ag)
 	ls[2]= NULL;
 	command[0].cmd = ls;
 	command[0].is_redir = 1; 
-	command[0].is_builtin = 0;
+	command[0].builtin_num = 1;
 	command[0].idx = 0;
 	command[0].command_len = 2;
 	command[0].env = NULL;
@@ -389,7 +407,7 @@ void test_init(t_command *command, char **ag)
 	// in_tmp2[0].arg=strdup(ag[5]);
 	command[1].cmd = cmd_grep;
 	command[1].is_redir = 0;
-	command[1].is_builtin = 0;
+	command[1].builtin_num = 0;
 	command[1].idx = 1; 
 	command[1].command_len = 2;
 	command[1].env = NULL; 
@@ -400,7 +418,7 @@ void test_init(t_command *command, char **ag)
 	// cmd_gre[2] = NULL;
 	// command[2].cmd = cmd_gre;
 	// command[2].is_redir = 0;
-	// command[2].is_builtin = 0;
+	// command[2].builtin_num = 0;
 	// command[2].idx = 2;
 	// command[2].is_end = 1;
 	// command[2].in = NULL;
