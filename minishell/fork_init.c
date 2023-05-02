@@ -6,7 +6,7 @@
 /*   By: geonlee <geonlee@student.42seoul.kr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/25 09:03:14 by geonlee           #+#    #+#             */
-/*   Updated: 2023/04/30 02:10:40 by geonlee          ###   ########.fr       */
+/*   Updated: 2023/05/02 19:09:04 by geonlee          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ typedef struct s_redir
 {
 	int dir; // "<","<<",">",">>" 구분용
 	int dir_len;
-	int idx;
 	char *heredoc_file;
 	char *arg; // "리다이렉션 뒤에 오는 인자"
 }   t_redir;
@@ -32,7 +31,7 @@ typedef struct s_redir
 typedef struct s_command
 {
 	char **cmd; // ex) { {/"bin/ls/"}, {"-la"}}
-	char **env;
+	char **env; //요기요 
 	int is_redir; // 리다이렉션 여부
 	int is_builtin; // 빌트인 여여부
 	int command_len;
@@ -55,7 +54,7 @@ int count_digits(int num)
 	int count;
 	
 	count = 0;
-	if (num == 0) 
+	if (num == 0)
 		return 1;
 	while (num != 0) 
 	{
@@ -117,9 +116,7 @@ void wait_all_process(pid_t *pid_lst, int command_len)
 	i = 0;
 	while (i < command_len)
 	{
-		// printf("i'm waiting pid %d : %d... \n",i,pid_lst[i]);
 		waitpid(pid_lst[i], &exit_code, 0);
-		// printf("done pid %d : %d... \n",i,pid_lst[i]);
 		i++;
 	}
 	free(pid_lst);
@@ -213,11 +210,14 @@ void builtin_exec(t_command command)
 	return ;
 }
 
-void    exec_in_rdr(t_redir redir)
+void    exec_in_rdr(t_redir redir) 
 {
 	int fd;
 
-	//있고 (없으면 없을떄 exitcode), 권한도 있는지(권한이없으면 없을 시에 exitcode)	
+	if (access(redir.arg, F_OK) == -1)
+		exit(1); //errno 2
+	if (access(redir.arg ,R_OK) == -1)
+		exit(1); //errno 13 
 	fd = open(redir.arg, O_RDONLY, 0644);
 	dup2(fd, STDIN_FILENO);
 	close(fd);
@@ -229,14 +229,15 @@ void	exec_in_heredoc(t_redir redir)
 
 	fd = open(redir.heredoc_file, O_RDONLY, 0644);
 	dup2(fd, STDIN_FILENO);
+	unlink(redir.heredoc_file);
 	close(fd);
 }
 
 void    exec_out_rdr_replace(t_redir redir)
 {
 	int fd;
-	
-	//권한도 있는지(권한이없으면 없을 시에 exitcode)	
+	if (access(redir.arg ,R_OK) == -1)
+		exit(1); //errno 13 		
 	fd = open(redir.arg, O_TRUNC | O_CREAT | O_WRONLY, 0644);
 	dup2(fd, STDOUT_FILENO);
 	close(fd);
@@ -246,7 +247,8 @@ void    exec_out_rdr_append(t_redir redir)
 {
 	int fd;
 
-	// 권한도 있는지(권한이없으면 없을 시에 exitcode)	
+	if (access(redir.arg ,R_OK) == -1)
+		exit(1); //errno 13 
 	fd = open(redir.arg, O_APPEND | O_CREAT | O_WRONLY, 0644);
 	dup2(fd, STDOUT_FILENO);
 	close(fd);
@@ -332,7 +334,9 @@ void exec_init(t_command *command)
 	pid_t   *pid_lst;
 
 	exec_rdr_list(command);
-	if (/*커맨드 개수 1개 && builtin && (builit이 환경변수 바꿔주는 명령어일때 || exit))*/0)
+	if (command[0].command_len == 1 && (command[0].is_builtin == 1) \
+		(ft_is_relatve_env(command[0].cmd || ft_isexit(command[0].cmd))))
+	if (/*커맨드 개수 1개 && builtin && (built in 이 환경변수 바꿔주는 명령어일때 || exit))*/0)
 	{
 		//fork 안하고 처리. exec함수 아예 빠져나가서 새로운 프롬프트 띄우거나 exit이면 모두 free하고 종료되도록
 	}
