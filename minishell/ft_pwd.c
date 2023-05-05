@@ -12,8 +12,7 @@ void	ft_pwd(int pipe_len)
     }
 	else
 	{
-		write(1, pwd, ft_strlen(pwd));
-		write(1, "\n", 1);
+		printf("%s\n",pwd);
 		free(pwd);
 		if (pipe_len)
 			exit(0);
