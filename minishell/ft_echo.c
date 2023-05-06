@@ -6,22 +6,11 @@
 /*   By: geonlee <geonlee@student.42seoul.kr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/20 08:51:08 by geonlee           #+#    #+#             */
-/*   Updated: 2023/05/02 19:52:22 by geonlee          ###   ########.fr       */
+/*   Updated: 2023/05/06 06:18:21 by geonlee          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
-#include <stdlib.h>
-
-int	ft_strlen(const char *s)
-{
-	int	len;
-
-	len = 0;
-	while (s[len])
-		len++;
-	return (len);
-}
+#include "test.h"
 
 int	is_echo_flag(char *str)
 {
@@ -37,7 +26,7 @@ int	is_echo_flag(char *str)
 	return (1);
 }
 
-void	ft_echo(char **arg)
+void	ft_echo(char **arg, int pipe_len)
 {
 	int		idx;
 	int		new_line;
@@ -57,9 +46,7 @@ void	ft_echo(char **arg)
 	}
 	if (!new_line)
 		write(1, "\n", 1);
-}
-
-int main(int ac, char **ag)
-{
-    ft_echo(ag);
+	if (pipe_len > 0)
+		exit(0);
+		//set exit 0
 }

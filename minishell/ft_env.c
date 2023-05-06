@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -23,9 +22,4 @@ void	ft_env(char **arg, char **env, int pipe_len)
 	if (pipe_len)
 		exit(0);
 	//exitcode 0
-}
-
-int main(int ac, char **ag, char **env)
-{
-    ft_env(ag,env,0);
 }

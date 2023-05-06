@@ -8,29 +8,6 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-strust gu
-{
-	int n;  1
-	char*str; a
-}
-
-struct cmd
-{
-	char **명+인;
-	t_gu *in;
-	t_gu *out;
-	
-}
-
-size_t	ft_strlen(const char *s)
-{
-	size_t	len;
-
-	len = 0;
-	while (s[len])
-		len++;
-	return (len);
-}
 
 char	*ft_strjoin(char const *s1, char const *s2)
 {

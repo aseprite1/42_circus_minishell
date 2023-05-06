@@ -1,0 +1,11 @@
+env 갱신, readline 단에서도 갱신,
+
+exit_code()
+command redir 
+"./"
+
+
+
+
+todo 
+// echo 123 > good 했을떄 stdout 을 바꿨는데 tmp로 원래 stdout을 가져왔을때 적용이안됨 .
