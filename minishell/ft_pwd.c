@@ -19,14 +19,15 @@ void	ft_pwd(char **env, int pipe_len)
 	pwd = get_env("PWD", env);
     if (pwd==NULL)
     {
+		g_exit = 1;
         if (pipe_len)
 			exit(1);
     }
 	else
 	{
+		g_exit = 0;
 		printf("%s\n",pwd);
 		if (pipe_len)
 			exit(0);
-		//exitcode 0
 	}
 }

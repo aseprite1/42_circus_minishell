@@ -46,7 +46,7 @@ void	ft_echo(char **arg, int pipe_len)
 	}
 	if (!new_line)
 		write(1, "\n", 1);
+	g_exit = 0;
 	if (pipe_len > 0)
 		exit(0);
-		//set exit 0
 }

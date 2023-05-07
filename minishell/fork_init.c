@@ -12,6 +12,12 @@
 
 #include "test.h"
 
+void exit_with_code(int i)
+{
+	g_exit = i;
+	exit(i);
+}
+
 int	ft_strlen(const char *s)
 {
 	int	len;
@@ -73,10 +79,10 @@ char *make_heredoc_temp(void)
 	{
 		file_idx = ft_itoa(i);
 		if (file_idx == NULL)
-			exit(1);
+			exit_with_code(1);
 		name = ft_strjoin("tmp_", file_idx);
 		if (name == NULL)
-			exit(1);
+			exit_with_code(1);
 		if (access(name, F_OK) == -1)
 		{
 			free(file_idx);
@@ -96,20 +102,20 @@ void write_in_heredoc(t_redir *redir)
 
 	fd = open(redir->heredoc_file, O_CREAT | O_WRONLY, 0644);
 	if (fd == -1)
-		exit(1);
+		exit_with_code(1);
 	while (1)
 	{
 		str = readline("> ");
 		if (!str)
 		{
 			close(fd);
-			exit(0);
+			exit_with_code(0);
 		}
 		if (!str_cmp(str, redir->arg))
 		{
 			free(str);
 			close(fd);
-			exit(0);
+			exit_with_code(0);
 		}
 		write(fd, str, ft_strlen(str));
 		write(fd, "\n", 1);
@@ -169,9 +175,15 @@ void    exec_in_rdr(t_command command, int i)
 	int fd;
 
 	if (access(command.redir[i].arg, F_OK) == -1)
-		exit(1); //errno 2 // bash: infile: No such file or directory
+	{
+		printf("minishell : %s: No such file or directory",command.redir[i].arg);
+		exit_with_code(1);
+	}
 	if (access(command.redir[i].arg ,R_OK) == -1)
-		exit(1); //errno 13  //
+	{
+		printf("minishell %s : Permission denied", command.redir[i].arg);
+		exit_with_code(1); //errno 13  //
+	}
 	fd = open(command.redir[i].arg, O_RDONLY, 0644);
 	dup2(fd, STDIN_FILENO);
 	close(fd);
@@ -193,8 +205,13 @@ void    exec_out_rdr_replace(t_command command, int i)
 	int access_code;
 	access_code = access(command.redir[i].arg, F_OK);
 	if (access_code != -1)
+	{
 		if (access(command.redir[i].arg ,R_OK) == -1)
-			exit(1); //errno 13
+		{
+			printf("minishell %s : Permission denied", command.redir[i].arg);
+			exit_with_code(1);
+		}
+	}
 	fd = open(command.redir[i].arg, O_TRUNC | O_CREAT | O_WRONLY, 0644);
 	if (command.builtin_num != -1)
 		dup2(fd, STDOUT_FILENO);
@@ -208,8 +225,13 @@ void    exec_out_rdr_append(t_command command, int i)
 
 	access_code = access(command.redir[i].arg, F_OK);
 	if (access_code != -1)
+	{
 		if (access(command.redir[i].arg ,R_OK) == -1)
-			exit(1); //errno 13 
+		{
+			printf("minishell %s : Permission denied", command.redir[i].arg);
+			exit_with_code(1);
+		}
+	}
 	fd = open(command.redir[i].arg, O_APPEND | O_CREAT | O_WRONLY, 0644);
 	if (command.builtin_num != -1)
 		dup2(fd, STDOUT_FILENO);
@@ -274,9 +296,9 @@ void exec_cmd(t_command command, int stdout_tmp)
 	{	
 		dup2(stdout_tmp, STDOUT_FILENO);
 		close(stdout_tmp);
-		printf("bigshell: %s: command not found\n",command.cmd[0]);		
+		printf("minishell: %s: command not found\n",command.cmd[0]);		
 		//unlinking all heredocs here && exit code 127
-		exit(127);
+		exit_with_code(127);
 	}
 	else if (command.command_len > 1  && command.builtin_num == 0)
 		execve((command.cmd)[0], command.cmd, command.env);
@@ -312,7 +334,7 @@ pid_t *fork_process(t_command *command)
 	i = 0;
 	pid = (pid_t *)malloc(sizeof(pid_t) * command[0].command_len);
 	if (!pid)
-		exit(1);
+		exit_with_code(1);
 	while (i < command[0].command_len)
 	{   
 		pipe(pipes);
@@ -327,7 +349,7 @@ pid_t *fork_process(t_command *command)
 		else if (pid[i] == 0)
 			pipe_child_process(command, pipes, in_tmp, i);
 		else
-			exit(1);
+			exit_with_code(1);
 		i++;
 	}
 	return (pid);
@@ -353,8 +375,6 @@ void exec_init(t_command *command)
 	// 	printf("arg = %s\n",command[0].redir[0].arg);
 
 	exec_rdr_list(command);
-	/*커맨드 개수 1개 && builtin && (built in 이 환경변수 바꿔주는 명령어일때 || exit))*/
-	//fork 안하고 처리. exec함수 아예 빠져나가서 새로운 프롬프트 띄우거나 exit이면 모두 free하고 종료되도록
 	if (command[0].command_len == 1)
 	{	
 		stdin_tmp = dup(STDIN_FILENO);

@@ -64,7 +64,7 @@ void	cd_home(char **env, int pipe_len)
 	if (home == NULL)
 	{
 		printf("-minishell: cd: HOME not set\n");
-    //exit code 1
+		g_exit = 1;
 		if (pipe_len > 0)
 			exit(1);
 	}
@@ -73,7 +73,7 @@ void	cd_home(char **env, int pipe_len)
 		chdir(home);
 		update_pwd(env, home);
 		update_oldpwd(env, pwd);
-    //exit code 0
+		g_exit = 0;
 		if (pipe_len > 0)
 			exit(1);
 	}
@@ -116,14 +116,14 @@ void	ft_cd(char **arg, char **env, int pipe_len)
 			cwd = getcwd(NULL, 0);
 			update_pwd(env, cwd);
 			update_oldpwd(env, pwd);
-			//exitcode 0
+			g_exit = 0;
 			if (pipe_len)
 				exit(0);
 		}
 		else
 		{
 			chdir(cwd);
-			//exitcode 1 
+			g_exit = 1;
 			if (pipe_len)
 				exit(1);
 		}

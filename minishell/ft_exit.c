@@ -49,12 +49,12 @@ void	error_exit(char *arg, int pipe_len)
 		printf("exit\n");
     if (arg)
     {
-        printf("minishell: exit: %s: numeric argument required\n", arg); // 나가짐 
+        printf("minishell: exit: %s: numeric argument required\n", arg);
         exit(255);
     }
     else
     {
-        // exit code 1 
+		g_exit(1);
         printf("minishell: exit: too many arguments\n");
     }
 }
@@ -85,6 +85,7 @@ void	ft_exit(char **arg, int pipe_len)
 	{
         if (!pipe_len)
 		    printf("exit\n");
+		g_exit(0);
         exit(0);
     }
 }
